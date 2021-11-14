@@ -27,6 +27,8 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
          const database = client.db('baby-spoon')
          const productsCollection = database.collection("products")
          const orderCollection = database.collection('orders')
+         const userCollection = database.collection('users')
+         const reviewCollection = database.collection('reviews')
 
          //POST API
         app.post('/products', async(req, res)=>{
@@ -77,9 +79,49 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
         //Order API
         app.post('/orders', async(req, res)=>{
           const order = req.body;
+          console.log("order", order)
           const result = await orderCollection.insertOne(order);
           res.json(result)
         })
+
+        //User API
+        app.post('/users', async(req, res)=>{
+          const user = req.body;
+          const result = await userCollection.insertOne(user);
+          res.json(result);
+        })
+
+        app.put('/users', async(req, res)=>{
+          const user = req.body;
+          const filter ={email:user.email};
+          const options = {upsert : true};
+          const updateDoc = {$set : user};
+          const result = await userCollection.updateOne(filter, updateDoc, options);
+          res.json(result);
+        })
+
+        app.put('/users/admin', async(req, res)=>{
+          const user = req.body;
+          console.log('put', user)
+          const filter = {email: user.email};
+          const updateDoc = {$set: {role:'admin'}};
+          const result = await userCollection.updateOne(filter, updateDoc);
+          res.json(result)
+        })
+
+          // Review POST API
+          app.post('/review', async(req, res)=>{
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review);
+            res.json(result);
+          });
+  
+          // Review GET API
+          app.get('/review', async(req, res) =>{
+            const cursor = reviewCollection.find({});
+            const review = await cursor.toArray();
+            res.send(review)
+          });
     }
     finally{
 
