@@ -26,6 +26,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
         await client.connect()
          const database = client.db('baby-spoon')
          const productsCollection = database.collection("products")
+         const orderCollection = database.collection('orders')
 
          //POST API
         app.post('/products', async(req, res)=>{
@@ -48,6 +49,23 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
           const product = await productsCollection.findOne(query);
           res.json(product);
         });
+        //Update API
+        app.put('/products/:id', async(req, res)=>{
+          const id = req.params.id;
+          const updateProduct = req.body;
+          const filter ={_id:ObjectId(id)};
+          const option = {upset :true};
+          const updateDoc ={
+            $set:{
+              name: updateProduct.name,
+              desc: updateProduct.desc,
+              price: updateProduct.price,
+              img: updateProduct.img
+            },
+          };
+          const result = await productsCollection.updateOne(filter, updateDoc, option);
+          res.json(result);
+        })
 
         //Delete API
         app.delete('/products/:id', async(req, res)=>{
@@ -55,6 +73,12 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
           const query = {_id:ObjectId(id)};
           const result = await productsCollection.deleteOne(query);
           res.json(result);
+        })
+        //Order API
+        app.post('/orders', async(req, res)=>{
+          const order = req.body;
+          const result = await orderCollection.insertOne(order);
+          res.json(result)
         })
     }
     finally{
