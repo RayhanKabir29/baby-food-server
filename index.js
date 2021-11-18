@@ -30,7 +30,7 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
          const userCollection = database.collection('users')
          const reviewCollection = database.collection('reviews')
 
-         //POST API
+         //POST API 
         app.post('/products', async(req, res)=>{
           const products = req.body;
           const result = await productsCollection.insertOne(products);
@@ -79,9 +79,23 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
         //Order API
         app.post('/orders', async(req, res)=>{
           const order = req.body;
-          console.log("order", order)
-          const result = await orderCollection.insertOne(order);
+          order.createAt = new Date();
+          console.log("order", order);
+         const result = await orderCollection.insertOne(order);
           res.json(result)
+        });
+
+        //Get Order API
+
+        app.get('/orders', async(req, res)=>{
+          let query = {};
+          const email = req.query.email;
+          if(email){
+              query = {email: email}
+          }
+          const cursor = orderCollection.find(query);
+          const orders = await cursor.toArray();
+          res.json(orders);
         })
 
         //User API
