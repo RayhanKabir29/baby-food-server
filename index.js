@@ -1,9 +1,10 @@
 const express = require('express')
-const { MongoClient } = require('mongodb');
-const ObjectId = require('mongodb').ObjectId;
+const app = express()
 const cors = require('cors')
 require('dotenv').config()
-const app = express()
+const { MongoClient } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId;
+
 const port = process.env.PORT || 5000
 
 //middleWare
@@ -122,8 +123,21 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
           const result = await userCollection.updateOne(filter, updateDoc);
           res.json(result)
         })
+        
+        //Check Admin API
+        app.get('/users/:email', async (req, res) => {
+          const email = req.params.email;
+          const query = { email: email };
+          const user = await userCollection.findOne(query);
+          let isAdmin = false;
+          if (user?.role === 'admin') {
+              isAdmin = true;
+          }
+          res.json({ admin: isAdmin });
+        })
 
-          // Review POST API
+
+        // Review POST API
           app.post('/review', async(req, res)=>{
             const review = req.body;
             const result = await reviewCollection.insertOne(review);
